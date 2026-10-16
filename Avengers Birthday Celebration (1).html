@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avengers Birthday Mission</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        marvelRed: '#E23636',
+                        marvelGold: '#FFD700',
+                        marvelBlue: '#00D2FF',
+                        darkCarbon: '#0F1115',
+                        cardBg: '#181C24'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0b0d12;
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(226, 54, 54, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.1) 0%, transparent 40%);
+        }
+
+        /* Arc Reactor Pulsing Effect */
+        .arc-reactor {
+            position: relative;
+            border-radius: 50%;
+            box-shadow: 0 0 25px #00D2FF, inset 0 0 25px #00D2FF;
+            animation: arcPulse 2s infinite alternate;
+        }
+
+        @keyframes arcPulse {
+            0% { box-shadow: 0 0 15px #00D2FF, inset 0 0 15px #00D2FF; }
+            100% { box-shadow: 0 0 35px #00D2FF, inset 0 0 25px #00D2FF; filter: drop-shadow(0 0 10px #00d2ff); }
+        }
+
+        /* Shield Glow Effect */
+        .shield-accent {
+            border: 2px solid #E23636;
+            box-shadow: 0 0 15px rgba(226, 54, 54, 0.5);
+        }
+
+        /* Metallic Text Styling */
+        .metallic-text {
+            background: linear-gradient(135deg, #FFF 20%, #FFD700 50%, #E23636 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Floating Emoji Styling */
+        .floating-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .floating-emoji {
+            position: absolute;
+            font-size: 2rem;
+            animation: floatUp 10s linear infinite;
+            opacity: 0.7;
+            user-select: none;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(105vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% {
+                transform: translateY(-10vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Secret Gift Card Flip */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0d12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E23636;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-marvelRed selection:text-white">
+
+    <!-- Floating Emojis Background Container -->
+    <div id="floating-emojis" class="floating-container"></div>
+
+    <!-- Audio Player (Web Audio API synth fallback integrated via JS) -->
+    <audio id="bg-music" loop>
+        <!-- A subtle futuristic background track link fallback -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73223.mp3?filename=heroic-epic-110328.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Top Navigation / Header Controls -->
+    <header class="relative z-10 p-4 max-w-7xl mx-auto w-full flex justify-between items-center border-b border-gray-800/80 backdrop-blur-md bg-darkCarbon/40 rounded-b-2xl">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-marvelRed flex items-center justify-center font-black font-orbitron text-white text-xl shadow-[0_0_15px_rgba(226,54,54,0.8)] border border-marvelGold">
+                A
+            </div>
+            <span class="font-orbitron font-bold tracking-widest text-sm sm:text-base text-gray-200 uppercase">
+                HQ MISSION: <span class="text-marvelGold">BIRTHDAY</span>
+            </span>
+        </div>
+
+        <!-- Controls Group -->
+        <div class="flex items-center space-x-3">
+            <!-- Audio Toggle Button -->
+            <button id="audio-btn" onclick="toggleAudio()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-marvelGold rounded-xl border border-marvelGold/40 transition flex items-center space-x-2 text-xs sm:text-sm font-semibold shadow-md">
+                <i id="audio-icon" class="fas font-solid fa-volume-xmark"></i>
+                <span id="audio-text" class="hidden sm:inline">Sound: OFF</span>
+            </button>
+            
+            <!-- Edit Name Trigger -->
+            <button onclick="toggleModal(true)" class="px-3 py-2 bg-marvelRed hover:bg-red-700 text-white rounded-xl border border-red-400/50 transition flex items-center space-x-2 text-xs sm:text-sm font-bold shadow-lg">
+                <i class="fas fa-user-gear"></i>
+                <span class="hidden sm:inline">Customize Hero</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="relative z-10 flex-grow max-w-6xl w-full mx-auto px-4 py-8 flex flex-col items-center space-y-12">
+
+        <!-- Hero Section Header -->
+        <section class="text-center space-y-6 max-w-3xl">
+            <!-- Arc Reactor Emblem -->
+            <div class="inline-block relative">
+                <div onclick="triggerConfetti()" class="arc-reactor w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full bg-slate-900 border-4 border-marvelBlue/80 flex items-center justify-center cursor-pointer transform hover:scale-105 transition-all group" title="Click Arc Reactor to Trigger Super Confetti!">
+                    <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full border-2 border-dashed border-marvelBlue flex items-center justify-center group-hover:rotate-180 transition-transform duration-700">
+                        <i class="fas fa-bolt text-marvelGold text-2xl sm:text-3xl animate-pulse"></i>
+                    </div>
+                </div>
+                <span class="text-[10px] font-orbitron tracking-widest text-marvelBlue uppercase block mt-2 opacity-80">Click Reactor for Power Boost</span>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="font-orbitron text-xs sm:text-sm uppercase tracking-[0.3em] text-marvelBlue font-bold">Protocol Birthday Initiated</h2>
+                <h1 id="hero-title" class="font-orbitron font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-wider metallic-text drop-shadow-lg">
+                    HAPPY BIRTHDAY HERO!
+                </h1>
+                <p id="hero-subtitle" class="font-montserrat text-gray-300 text-base sm:text-lg max-w-xl mx-auto font-medium">
+                    Earth's mightiest celebration is assembled for <span id="hero-name-display" class="text-marvelGold font-bold underline decoration-marvelRed underline-offset-4">Cap</span>! Prepare for special missions and secret intel gifts.
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-4 pt-2">
+                <button onclick="triggerConfetti()" class="px-6 py-3 bg-gradient-to-r from-marvelRed to-red-700 hover:from-red-600 hover:to-marvelRed text-white font-orbitron font-bold rounded-xl shadow-[0_0_20px_rgba(226,54,54,0.6)] transform hover:-translate-y-1 transition active:translate-y-0 flex items-center space-x-2 border border-marvelGold/50">
+                    <i class="fas fa-party-horn"></i>
+                    <span>Assemble Celebration 🎉</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Secret Sentences Gifts Section -->
+        <section class="w-full space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center space-x-2 text-marvelGold font-orbitron text-sm uppercase tracking-widest">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>Top Secret Intel</span>
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <h2 class="font-orbitron text-2xl sm:text-3xl font-bold text-white">3 Secret Sentences Gifts</h2>
+                <p class="text-gray-400 text-sm">Click on each Classified Avengers Vault box to unlock your secret message!</p>
+            </div>
+
+            <!-- 3 Interactive Flip Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                
+                <!-- Gift Box 1 -->
+                <div class="perspective-1000 h-64 cursor-pointer group" onclick="revealGift(this)">
+                    <div id="card-1" class="gift-card relative w-full h-full transform-style-3d rounded-2xl shadow-xl transition-transform duration-700">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-cardBg to-gray-900 border-2 border-marvelRed/50 p-6 flex flex-col justify-between items-center backface-hidden group-hover:border-marvelRed transition-colors">
+                            <div class="w-full flex justify-between items-center text-marvelRed">
+                                <span class="font-orbitron text-xs font-bold tracking-widest">VAULT #01</span>
+                                <i class="fas fa-lock text-lg"></i>
+                            </div>
+                            <div class="text-center space-y-3">
+                                <div class="w-16 h-16 mx-auto rounded-full bg-marvelRed/10 border border-marvelRed/40 flex items-center justify-center text-3xl text-marvelRed group-hover:scale-110 transition-transform">
+                                    🎁
+                                </div>
+                                <h3 class="font-orbitron font-bold text-lg text-gray-200">Iron Man Reserve</h3>
+                            </div>
+                            <span class="text-xs text-marvelGold font-orbitron animate-pulse">Tap to Unlock Intel</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-marvelRed/90 to-red-950 border-2 border-marvelGold p-6 flex flex-col justify-between items-center rotate-y-180 backface-hidden text-center shadow-[0_0_25px_rgba(226,54,54,0.5)]">
+                            <div class="w-full flex justify-between items-center text-marvelGold">
+                                <span class="font-orbitron text-xs font-bold">UNLOCKED</span>
+                                <i class="fas fa-heart text-marvelGold text-lg animate-bounce"></i>
+                            </div>
+                            <div class="my-auto space-y-2">
+                                <span class="text-3xl">❤️</span>
+                                <p class="font-orbitron text-xl font-black text-white leading-snug tracking-wide">
+                                    "I love you"
+                                </p>
+                            </div>
+                            <span class="text-[10px] font-orbitron tracking-widest text-marvelGold uppercase">Classified Code Revealed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gift Box 2 -->
+                <div class="perspective-1000 h-64 cursor-pointer group" onclick="revealGift(this)">
+                    <div id="card-2" class="gift-card relative w-full h-full transform-style-3d rounded-2xl shadow-xl transition-transform duration-700">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-cardBg to-gray-900 border-2 border-marvelBlue/50 p-6 flex flex-col justify-between items-center backface-hidden group-hover:border-marvelBlue transition-colors">
+                            <div class="w-full flex justify-between items-center text-marvelBlue">
+                                <span class="font-orbitron text-xs font-bold tracking-widest">VAULT #02</span>
+                                <i class="fas fa-lock text-lg"></i>
+                            </div>
+                            <div class="text-center space-y-3">
+                                <div class="w-16 h-16 mx-auto rounded-full bg-marvelBlue/10 border border-marvelBlue/40 flex items-center justify-center text-3xl text-marvelBlue group-hover:scale-110 transition-transform">
+                                    🛡️
+                                </div>
+                                <h3 class="font-orbitron font-bold text-lg text-gray-200">Cap's Secret</h3>
+                            </div>
+                            <span class="text-xs text-marvelBlue font-orbitron animate-pulse">Tap to Unlock Intel</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-marvelBlue/90 to-blue-950 border-2 border-marvelGold p-6 flex flex-col justify-between items-center rotate-y-180 backface-hidden text-center shadow-[0_0_25px_rgba(0,210,255,0.5)]">
+                            <div class="w-full flex justify-between items-center text-marvelGold">
+                                <span class="font-orbitron text-xs font-bold">UNLOCKED</span>
+                                <i class="fas fa-smile-beam text-marvelGold text-lg animate-bounce"></i>
+                            </div>
+                            <div class="my-auto space-y-2">
+                                <span class="text-3xl">✨</span>
+                                <p class="font-orbitron text-lg font-black text-white leading-snug tracking-wide">
+                                    "Be happy, healthy and cute"
+                                </p>
+                            </div>
+                            <span class="text-[10px] font-orbitron tracking-widest text-marvelGold uppercase">Classified Code Revealed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gift Box 3 -->
+                <div class="perspective-1000 h-64 cursor-pointer group" onclick="revealGift(this)">
+                    <div id="card-3" class="gift-card relative w-full h-full transform-style-3d rounded-2xl shadow-xl transition-transform duration-700">
+                        <!-- Front -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-cardBg to-gray-900 border-2 border-marvelGold/50 p-6 flex flex-col justify-between items-center backface-hidden group-hover:border-marvelGold transition-colors">
+                            <div class="w-full flex justify-between items-center text-marvelGold">
+                                <span class="font-orbitron text-xs font-bold tracking-widest">VAULT #03</span>
+                                <i class="fas fa-lock text-lg"></i>
+                            </div>
+                            <div class="text-center space-y-3">
+                                <div class="w-16 h-16 mx-auto rounded-full bg-marvelGold/10 border border-marvelGold/40 flex items-center justify-center text-3xl text-marvelGold group-hover:scale-110 transition-transform">
+                                    ⚡
+                                </div>
+                                <h3 class="font-orbitron font-bold text-lg text-gray-200">Thor's Realm</h3>
+                            </div>
+                            <span class="text-xs text-marvelGold font-orbitron animate-pulse">Tap to Unlock Intel</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 w-full h-full rounded-2xl bg-gradient-to-br from-amber-600 to-yellow-950 border-2 border-marvelGold p-6 flex flex-col justify-between items-center rotate-y-180 backface-hidden text-center shadow-[0_0_25px_rgba(255,215,0,0.5)]">
+                            <div class="w-full flex justify-between items-center text-marvelGold">
+                                <span class="font-orbitron text-xs font-bold">UNLOCKED</span>
+                                <i class="fas fa-star text-marvelGold text-lg animate-bounce"></i>
+                            </div>
+                            <div class="my-auto space-y-2">
+                                <span class="text-3xl">🌟</span>
+                                <p class="font-orbitron text-base font-black text-white leading-snug tracking-wide">
+                                    "Assemble your dreams & shine brightest!"
+                                </p>
+                            </div>
+                            <span class="text-[10px] font-orbitron tracking-widest text-marvelGold uppercase">Classified Code Revealed</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Hero Photo Frame & Wishes Section -->
+        <section class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center pt-6">
+            
+            <!-- Interactive Photo Frame -->
+            <div class="bg-cardBg/80 border border-gray-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-camera text-marvelRed"></i>
+                        <h3 class="font-orbitron font-bold text-gray-200 text-sm">HERO DISPLAY MATRIX</h3>
+                    </div>
+                    <span class="text-xs font-orbitron text-marvelBlue">STATUS: ACTIVE</span>
+                </div>
+
+                <!-- Image Frame -->
+                <div class="relative group rounded-xl overflow-hidden border-2 border-marvelGold/40 bg-gray-900/90 aspect-video flex items-center justify-center">
+                    <img id="hero-photo" src="https://images.unsplash.com/photo-1635863138275-d9b33299680b?auto=format&fit=crop&w=800&q=80" alt="Avenger Hero" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://placehold.co/800x450/181C24/FFD700?text=Avengers+Hero+HQ'">
+                    
+                    <!-- Frame Overlay Accent -->
+                    <div class="absolute inset-0 border-4 border-transparent border-t-marvelRed border-b-marvelBlue pointer-events-none opacity-60"></div>
+
+                    <!-- Change Image Overlay Button -->
+                    <label class="absolute bottom-3 right-3 bg-darkCarbon/90 hover:bg-marvelRed text-white px-3 py-1.5 rounded-lg text-xs font-orbitron cursor-pointer transition flex items-center space-x-2 border border-marvelGold/40">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Photo</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="uploadHeroImage(event)">
+                    </label>
+                </div>
+                <p class="text-xs text-gray-400 text-center italic">Personalize the headquarters photo matrix by uploading your own hero image!</p>
+            </div>
+
+            <!-- Interactive Birthday Wishes Terminal -->
+            <div class="bg-cardBg/80 border border-gray-800 rounded-2xl p-6 relative backdrop-blur-sm space-y-4 shadow-2xl flex flex-col justify-between h-full">
+                <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-terminal text-marvelBlue"></i>
+                        <h3 class="font-orbitron font-bold text-gray-200 text-sm">AVENGERS WISH LOG</h3>
+                    </div>
+                    <span id="wish-count" class="text-xs font-orbitron text-marvelGold">3 Messages</span>
+                </div>
+
+                <!-- Wishes Feed -->
+                <div id="wishes-list" class="space-y-3 max-h-56 overflow-y-auto pr-1 my-2">
+                    <div class="bg-darkCarbon/80 p-3 rounded-xl border border-gray-800 space-y-1">
+                        <div class="flex justify-between text-xs font-orbitron">
+                            <span class="text-marvelRed font-bold">Iron Man (Tony)</span>
+                            <span class="text-gray-500">Just Now</span>
+                        </div>
+                        <p class="text-sm text-gray-300">"Happy Birthday, kid! Keep innovating and stay 3000 times awesome."</p>
+                    </div>
+
+                    <div class="bg-darkCarbon/80 p-3 rounded-xl border border-gray-800 space-y-1">
+                        <div class="flex justify-between text-xs font-orbitron">
+                            <span class="text-marvelBlue font-bold">Captain America</span>
+                            <span class="text-gray-500">5m ago</span>
+                        </div>
+                        <p class="text-sm text-gray-300">"Whatever it takes to have the best birthday ever. Stand proud!"</p>
+                    </div>
+
+                    <div class="bg-darkCarbon/80 p-3 rounded-xl border border-gray-800 space-y-1">
+                        <div class="flex justify-between text-xs font-orbitron">
+                            <span class="text-marvelGold font-bold">Thor Odinson</span>
+                            <span class="text-gray-500">12m ago</span>
+                        </div>
+                        <p class="text-sm text-gray-300">"May your day be filled with victory, feast, and thunderous joy!"</p>
+                    </div>
+                </div>
+
+                <!-- Input Wish -->
+                <form onsubmit="addWish(event)" class="flex gap-2 pt-2">
+                    <input type="text" id="wish-input" placeholder="Transmit a birthday message..." required class="flex-grow bg-darkCarbon border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-marvelBlue transition">
+                    <button type="submit" class="bg-marvelBlue hover:bg-blue-600 text-darkCarbon font-orbitron font-bold px-4 py-2 rounded-xl text-xs transition flex items-center justify-center">
+                        <i class="fas fa-paper-plane mr-1"></i> Send
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-gray-800/80 bg-darkCarbon/60 py-6 text-center text-xs text-gray-500 font-orbitron">
+        <p>AVENGERS HQ CELEBRATION PROTOCOL • ASSEMBLE & SHINE</p>
+    </footer>
+
+    <!-- Modal for Hero Name Customization -->
+    <div id="customize-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border-2 border-marvelRed rounded-2xl max-w-md w-full p-6 space-y-6 shadow-[0_0_30px_rgba(226,54,54,0.4)]">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <h3 class="font-orbitron font-bold text-white text-lg flex items-center gap-2">
+                    <i class="fas fa-user-ninja text-marvelRed"></i>
+                    Customize Hero Profile
+                </h3>
+                <button onclick="toggleModal(false)" class="text-gray-400 hover:text-white text-lg">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-orbitron text-gray-300 mb-1">Hero Name</label>
+                    <input type="text" id="modal-name-input" value="Cap" class="w-full bg-darkCarbon border border-gray-700 rounded-xl p-3 text-white focus:border-marvelGold outline-none font-montserrat">
+                </div>
+                <div>
+                    <label class="block text-xs font-orbitron text-gray-300 mb-1">Custom Title</label>
+                    <input type="text" id="modal-title-input" value="HAPPY BIRTHDAY HERO!" class="w-full bg-darkCarbon border border-gray-700 rounded-xl p-3 text-white focus:border-marvelGold outline-none font-montserrat">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-2">
+                <button onclick="toggleModal(false)" class="px-4 py-2 rounded-xl text-xs font-orbitron bg-gray-800 hover:bg-gray-700 text-gray-300">Cancel</button>
+                <button onclick="saveHeroCustomization()" class="px-5 py-2 rounded-xl text-xs font-orbitron bg-marvelRed hover:bg-red-700 text-white font-bold">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Floating Emojis Config
+        const emojis = ['🌟', '⚡', '🛡️', '🎂', '🎁', '✨', '🔨', '🕷️', '🦾'];
+        const emojiContainer = document.getElementById('floating-emojis');
+
+        function createFloatingEmojis() {
+            const count = 25;
+            for (let i = 0; i < count; i++) {
+                const emojiEl = document.createElement('div');
+                emojiEl.className = 'floating-emoji';
+                emojiEl.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Randomize positions and speed
+                emojiEl.style.left = `${Math.random() * 95}%`;
+                emojiEl.style.animationDuration = `${6 + Math.random() * 8}s`;
+                emojiEl.style.animationDelay = `${Math.random() * 8}s`;
+                emojiEl.style.fontSize = `${1.5 + Math.random() * 1.5}rem`;
+
+                emojiContainer.appendChild(emojiEl);
+            }
+        }
+
+        // Confetti Generator
+        function triggerConfetti() {
+            // Sound effect using Web Audio API Synth if audio isn't muted
+            playSuperHeroSound();
+
+            const count = 200;
+            const defaults = {
+                origin: { y: 0.7 }
+            };
+
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, {
+                    particleCount: Math.floor(count * particleRatio)
+                }));
+            }
+
+            // Marvel palette confetti
+            const marvelColors = ['#E23636', '#FFD700', '#00D2FF', '#FFFFFF'];
+
+            fire(0.25, {
+                spread: 26,
+                startVelocity: 55,
+                colors: marvelColors
+            });
+            fire(0.2, {
+                spread: 60,
+                colors: marvelColors
+            });
+            fire(0.35, {
+                spread: 100,
+                decay: 0.91,
+                scalar: 0.8,
+                colors: marvelColors
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 25,
+                decay: 0.92,
+                colors: marvelColors
+            });
+            fire(0.1, {
+                spread: 120,
+                startVelocity: 45,
+                colors: marvelColors
+            });
+        }
+
+        // Web Audio API Hero Sound Effect
+        function playSuperHeroSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {
+                // Ignore audio context autoplay restrictions
+            }
+        }
+
+        // Card Reveal Toggle
+        function revealGift(cardContainer) {
+            const innerCard = cardContainer.querySelector('.gift-card');
+            innerCard.classList.toggle('rotate-y-180');
+            
+            // Trigger small celebratory confetti
+            confetti({
+                particleCount: 30,
+                spread: 50,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#E23636', '#FFFFFF']
+            });
+            
+            playSuperHeroSound();
+        }
+
+        // Audio Controls
+        let isPlaying = false;
+        const bgMusic = document.getElementById('bg-music');
+        const audioBtn = document.getElementById('audio-btn');
+        const audioIcon = document.getElementById('audio-icon');
+        const audioText = document.getElementById('audio-text');
+
+        function toggleAudio() {
+            if (isPlaying) {
+                bgMusic.pause();
+                audioIcon.className = 'fas fa-volume-xmark';
+                audioText.innerText = 'Sound: OFF';
+                isPlaying = false;
+            } else {
+                bgMusic.play().then(() => {
+                    audioIcon.className = 'fas fa-volume-high text-marvelGold';
+                    audioText.innerText = 'Sound: ON';
+                    isPlaying = true;
+                }).catch(err => {
+                    console.log("Audio playback blocked by browser settings.", err);
+                });
+            }
+        }
+
+        // Modal Handler
+        function toggleModal(show) {
+            const modal = document.getElementById('customize-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function saveHeroCustomization() {
+            const nameInput = document.getElementById('modal-name-input').value.trim();
+            const titleInput = document.getElementById('modal-title-input').value.trim();
+
+            if (nameInput) {
+                document.getElementById('hero-name-display').innerText = nameInput;
+            }
+            if (titleInput) {
+                document.getElementById('hero-title').innerText = titleInput;
+            }
+
+            toggleModal(false);
+            triggerConfetti();
+        }
+
+        // Upload Custom Image
+        function uploadHeroImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('hero-photo').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Wish Log System
+        function addWish(e) {
+            e.preventDefault();
+            const input = document.getElementById('wish-input');
+            const wishText = input.value.trim();
+
+            if (wishText) {
+                const list = document.getElementById('wishes-list');
+                const newWish = document.createElement('div');
+                newWish.className = "bg-darkCarbon/80 p-3 rounded-xl border border-marvelBlue/40 space-y-1 animate-fade-in";
+                newWish.innerHTML = `
+                    <div class="flex justify-between text-xs font-orbitron">
+                        <span class="text-marvelBlue font-bold">Ally Hero (You)</span>
+                        <span class="text-gray-500">Just Now</span>
+                    </div>
+                    <p class="text-sm text-gray-300">"${wishText}"</p>
+                `;
+                
+                list.prepend(newWish);
+                input.value = '';
+
+                // Update count
+                const countEl = document.getElementById('wish-count');
+                const currentCount = parseInt(countEl.innerText) || 3;
+                countEl.innerText = `${currentCount + 1} Messages`;
+
+                triggerConfetti();
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            createFloatingEmojis();
+            // Automatically launch celebratory confetti on arrival
+            setTimeout(() => {
+                triggerConfetti();
+            }, 500);
+        };
+    </script>
+</body>
+</html>
